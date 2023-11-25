@@ -55,22 +55,25 @@ class LoanCalc:
 
 
 
-    # Compute the total loan repayment amount.
+    # Compute the monthly payment and the total loan repayment amount.
     def calculate_loan( self ):
-        monthlypayment = self.get_monthly_payment( float(self.loanamountVar.get()),
+        monthly_payment = self.get_monthly_payment( float(self.loanamountVar.get()),
             float(self.annualinterestVar.get()) / 12, int(self.numberofyearsVar.get()))
 
-        self.monthlypaymentVar.set(format(monthlypayment, '10.2f'))
-        totalpayment = float(self.monthlypaymentVar.get()) * 12 * int(self.numberofyearsVar.get())
+        self.monthlypaymentVar.set(format(monthly_payment, '10.2f'))
+        total_payment = float(self.monthlypaymentVar.get()) * 12 * int(self.numberofyearsVar.get())
 
-        self.totalpaymentVar.set(format(totalpayment, '10.2f'))
+        self.totalpaymentVar.set(format(total_payment, '10.2f'))
 
 
 
-    # Determine the required monthly payment amount.
+    # Determine the required monthly payment amount.  See reference noted in 'readme.md'
     def get_monthly_payment( self, loan_amount, monthly_interest_rate, num_years ):
-        monthly_payment = loan_amount * monthly_interest_rate / ( 1.0 - 1.0 / ( 1.0 + 
-                          monthly_interest_rate )**(num_years*12))
+        num_periods = num_years * 12
+        present_value = ( 1.0 - 1.0 / ( 1.0 + monthly_interest_rate )**(num_periods) )
+        present_value = present_value / monthly_interest_rate
+        monthly_payment = loan_amount / present_value
+
         return monthly_payment
 
 
