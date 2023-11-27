@@ -2,14 +2,23 @@
    This script acquires loan details and then computes the required monthly
    payment as well as the corresponding payment schedule."""
 
-import tkinter as tk
+import datetime                         # Used to time-stamp the output file
+import pathlib                          # Used for file I/O
+import tkinter as tk                    # Used for GUI display
+from   tkinter import filedialog as fd  # Used for the fileopen dialog
+import sys                              # For try/except error processing
+
+
+####################################################################################################
+####################################################################################################
+"""The 'LoanCalc' class acquires the loan parameters and determines the monthly payment amount."""
 
 class LoanCalc:
     # Initializer / Constructor
     def __init__( self ):
         window = tk.Tk()
         window.title( "Loan Calculator" )
-        window.geometry("500x300+300+450")  # Width, Height, X position, Y position
+        window.geometry("500x350+300+450")  # Width, Height, X position, Y position
         window.config( bg='#f0e6c2' )       # set the background color - light yellow
 
         # Setup the labels for the input fields
@@ -19,10 +28,14 @@ class LoanCalc:
                  ).place( x=10, y=50 )
         tk.Label( window, text="Loan Amount:", font=('Arial,14,bold'), bg='#f0e6c2'
                  ).place(x=10,y=90)
+        
+        tk.Button( window, text="Output File (optional):", font=('Arial,14,bold'), 
+                  command=self.select_file ).place(x=10,y=130)
+        
         tk.Label(window, text="Monthly Payment:", font=('Arial,14,bold'), bg='#f0e6c2',
-                 fg='blue' ).place(x=10,y=150)
-        tk.Label(window, text="Total Payment:", font=('Arial,14,bold'), bg='#f0e6c2',
                  fg='blue' ).place(x=10,y=190)
+        tk.Label(window, text="Total Payment:", font=('Arial,14,bold'), bg='#f0e6c2',
+                 fg='blue' ).place(x=10,y=230)
 
         # Define the actual input fields and their corresponding variables
         self.annualinterestVar = tk.StringVar()
@@ -36,19 +49,26 @@ class LoanCalc:
         self.loanamountVar=tk.StringVar()
         tk.Entry( window, textvariable=self.loanamountVar, font=('Arial,14,bold') 
                  ).place(x=230,y=90)
+        
+        # Acquire the output file path names.  The output will bet to a text file as well as
+        # to a CSV file, both in the same directory.  The default directory is the current
+        # working directory where the script is invoked.
+        self.outpathVar = tk.StringVar()
+        tk.Entry( window, textvariable= self.outpathVar, font=('Arial,14,bold'),
+                 ).place(x=230,y=130) 
 
         # Define the output fields and their corresponding variables
         self.monthlypaymentVar = tk.StringVar()
         tk.Label( window, textvariable=self.monthlypaymentVar, font=('Arial,14,bold'),
-                 bg='#f0e6c2' ).place(x=230,y=150)
+                 bg='#f0e6c2' ).place(x=230,y=190)
         
         self.totalpaymentVar=tk.StringVar()
         tk.Label( window, textvariable=self.totalpaymentVar, font=('Arial,15,bold'),
-                 bg='#f0e6c2' ).place(x=230,y=190)
+                 bg='#f0e6c2' ).place(x=230,y=230)
 
         # Finally define the activation/go button to invoke the action
         tk.Button( window, text="Calculate", font=('Arial,14,bold'), command=self.calculate_loan 
-                  ).place(x=180,y=240)
+                  ).place(x=180,y=270)
 
         # Start the 'event' loop
         window.mainloop()
@@ -56,14 +76,38 @@ class LoanCalc:
 
 
     # Compute the monthly payment and the total loan repayment amount.
+    # Verify there is sufficient input data defined before attempting the computation.
     def calculate_loan( self ):
-        monthly_payment = self.get_monthly_payment( float(self.loanamountVar.get()),
-            float(self.annualinterestVar.get()) / 12, int(self.numberofyearsVar.get()))
+        try:
+            loan_amount = float(self.loanamountVar.get())
+        except ValueError:
+            self.loanamountVar.set( f"Invalid loan amount!" )
 
-        self.monthlypaymentVar.set(format(monthly_payment, '10.2f'))
-        total_payment = float(self.monthlypaymentVar.get()) * 12 * int(self.numberofyearsVar.get())
+        try:
+            monthly_interest_rate = float(self.annualinterestVar.get()) / 12.
+        except ValueError:
+            self.annualinterestVar.set( f"Invalid interest rate!" )
 
-        self.totalpaymentVar.set(format(total_payment, '10.2f'))
+        try:
+            num_years = int(self.numberofyearsVar.get())
+        except ValueError:
+            self.numberofyearsVar.set( f"Invalid number of years!" )
+
+        # Now verify the data makes sense
+        test_value = loan_amount * monthly_interest_rate * num_years
+        if( test_value < 1.0 ):
+            self.annualinterestVar.set( f"Illogical data entered" )
+            self.numberofyearsVar.set( f"for one or more of these" )
+            self.loanamountVar.set( f"three values!" )
+            return 0
+
+        # Perform the computations for the monthly payment.
+        self.monthly_payment = self.get_monthly_payment( loan_amount, monthly_interest_rate, 
+                                                    num_years )
+        self.monthlypaymentVar.set( f"${self.monthly_payment:,.2f}" )
+
+        total_payment = float( self.monthly_payment * 12 * num_years )
+        self.totalpaymentVar.set( f"${total_payment:,.2f}" )
 
 
 
@@ -75,10 +119,112 @@ class LoanCalc:
         monthly_payment = loan_amount / present_value
 
         return monthly_payment
+    
 
+    # Allow the user to select the output (file) pathname.
+    def select_file( self ):
+
+        # Build the path to the current working directory to seed the fileopen dialog
+        current_path = pathlib.Path.cwd()
+
+        template = ( ("text files", "*.txt"), )
+        file = fd.asksaveasfile( title='Define Output File', mode='w',
+                      initialdir = current_path, filetypes = template )
+        
+        self.outpathVar.set( f"{file.name}" )
+       
+
+
+
+####################################################################################################
+####################################################################################################
+"""The 'LoanCalc' class uses the loan payment details to computes the monthly payment schedule."""
+
+class PaymentSchedule:
+    # Initializer / Constructor
+    def __init__( self, monthly_payment, loan_amount, interest_rate, number_of_years,
+                 o_file ):
+        
+        self.monthly_payment = monthly_payment
+        self.loan_amount     = loan_amount
+        self.interest_rate   = interest_rate
+        self.number_of_years = number_of_years
+        self.o_file          = o_file
+
+
+    # Write the loan specifics to the start of the file (header).
+    def file_headers( self ):
+
+        title = '\n' + 'Loan repayment schedule' + '\n'
+        o_file.write( title )
+
+        date = datetime.datetime.now()
+        title = 'Schedule created on ' + date.strftime("%A") + ' ' + date.strftime("%x") + '\n'
+        o_file.write( title )
+
+        title = 'by: Richard Ay, November 2023' + '\n\n'
+        o_file.write( title )
+  
+        title = ' Loan Amount    : ' + ( f"${ self.loan_amount:,.2f}" ) + '\n'
+        o_file.write( title )
+        title = ' Interest Rate  : ' + ( f"{ interest_rate:,.2f}" ) + '\n'
+        o_file.write( title )
+        title = ' Period (years) : ' + ( f"{ self.number_of_years:,.2f}" ) + '\n'
+        o_file.write( title )
+        title = ' Monthly Payment: ' + ( f"${ self.monthly_payment:,.2f}" ) + '\n\n'
+        o_file.write( title )
+
+        # Write the column headings for the payment schedule
+        title = '  Month' + '\t' + 'Begin_Balance' + '\t' + 'Payment' '\t\t' + 'Interest'  
+        title = title + '\t' + 'Principal' + '\t' + 'End_Balance' '\n'
+        o_file.write( title )
+
+
+    # Compute and output the monthly payment schedule.
+    def payments( self ):
+        months = int( self.number_of_years * 12 )
+        monthly_interest = self.interest_rate / 12.
+        monthly_payment  = self.monthly_payment
+
+        begin_balance = self.loan_amount
+        for i in range( 0, months ):
+            interest            = begin_balance * monthly_interest
+            principal_repayment = monthly_payment - interest
+            end_balance         = begin_balance - principal_repayment
+
+            title = (f" {i+1}\t{begin_balance:,.2f}\t{monthly_payment:,.2f}")
+            title = title + (f"\t{interest:,.2f}\t{principal_repayment:,.2f}\t")
+            title = title + (f"\t{end_balance:,.2f}\n")
+
+            o_file.write( title )
+
+            begin_balance = end_balance
 
 
 ################################################################################################
-# Invoke the loan calculator
 
+# Invoke the loan calculator
 loan = LoanCalc()
+
+# Acquire the required loan parameters (from the LoanCalc class) to compute the payment schedule
+monthly_payment = loan.monthly_payment 
+loan_amount     = float( loan.loanamountVar.get() )
+interest_rate   = float( loan.annualinterestVar.get() )
+number_of_years = float( loan.numberofyearsVar.get() )
+output_file_txt = loan.outpathVar.get()
+
+
+# Open the text output file
+out_path = pathlib.Path( output_file_txt )
+with out_path.open( mode='w', encoding='utf-8' ) as o_file:
+
+    # Compute and output the payment schedule
+    schedule = PaymentSchedule( monthly_payment, loan_amount, interest_rate, number_of_years,
+                               o_file )
+    
+    # Write the loan parameters to the output file headers.
+    schedule.file_headers()
+    schedule.payments()
+
+
+

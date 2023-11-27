@@ -33,11 +33,15 @@ The equation is:  PV = [1 - (1 + r)^-n ] / r
               Periodic Payment = (Loan Amount) / PV  
 
 ## File List
-** .gitignore** - The list of files & directories to be excluded from Git source control.
+** .gitignore** - The list of files & directories to be excluded from Git source control.   
 ** Loan_Calc.py** - The file containing the entire script for the loan computations.  
 
 
 ## Technologies and Imports
+datetime - used to time-stamp the output
+pathlib  - used for file manipulations
+sys      - used for try/except error processing
+tkinter  - used to generate and interact with the GUI
 
 
 
