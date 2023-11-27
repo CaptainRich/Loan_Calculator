@@ -186,19 +186,20 @@ class PaymentSchedule:
         monthly_interest = self.interest_rate / 12.
         monthly_payment  = self.monthly_payment
 
-        begin_balance = self.loan_amount
+        begin_balance = self.loan_amount          # Starting amount (balance)
+
         for i in range( 0, months ):
             interest            = begin_balance * monthly_interest
             principal_repayment = monthly_payment - interest
             end_balance         = begin_balance - principal_repayment
 
-            title = (f" {i+1}\t{begin_balance:,.2f}\t{monthly_payment:,.2f}")
-            title = title + (f"\t{interest:,.2f}\t{principal_repayment:,.2f}\t")
-            title = title + (f"\t{end_balance:,.2f}\n")
+            title = (f"  {i+1}\t{begin_balance:9,.2f}\t{monthly_payment:9,.2f}")
+            title = title + (f"\t{interest:9,.2f}\t{principal_repayment:9,.2f}\t")
+            title = title + (f"{end_balance:9,.2f}\n")
 
             o_file.write( title )
 
-            begin_balance = end_balance
+            begin_balance = end_balance           # Update for next period
 
 
 ################################################################################################
