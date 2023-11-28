@@ -40,6 +40,8 @@ Weil, Schipper, and Francis. See page 715, "Present Value of an Annuity".
 The equation is:  PV = [1 - (1 + r)^-n ] / r  
                      then  
               Periodic Payment = (Loan Amount) / PV  
+       
+       where: 'r' is the interest rate and 'n' is the number of periods.
 
 ## File List
 ** .gitignore** - The list of files & directories to be excluded from Git source control.   
