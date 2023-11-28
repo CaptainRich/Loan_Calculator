@@ -18,57 +18,63 @@ class LoanCalc:
     def __init__( self ):
         window = tk.Tk()
         window.title( "Loan Calculator" )
-        window.geometry("500x350+300+450")  # Width, Height, X position, Y position
-        window.config( bg='#f0e6c2' )       # set the background color - light yellow
+        window.geometry("650x350+300+450")  # Width, Height, X position, Y position
+        window.config( bg='#ebebad' )       # set the background color - light yellow
 
         # Setup the labels for the input fields
-        tk.Label( window, text="Annual Interest Rate (ie: 0.04):", font=('Arial,14,bold)'), bg='#f0e6c2' 
-                 ).place( x=10, y=10 )
-        tk.Label( window, text="Number of Years:", font=('Arial,14,bold)'), bg='#f0e6c2' 
+        tk.Label( window, text="Loan Amount:", font=('Arial,14,bold'), bg='#ebebad'
+                 ).place(x=10,y=10)
+        tk.Label( window, text="Annual Interest Rate (ie: 0.04):", font=('Arial,14,bold)'), bg='#ebebad' 
                  ).place( x=10, y=50 )
-        tk.Label( window, text="Loan Amount:", font=('Arial,14,bold'), bg='#f0e6c2'
-                 ).place(x=10,y=90)
+        tk.Label( window, text="Number of Years:", font=('Arial,14,bold)'), bg='#ebebad' 
+                 ).place( x=10, y=90 )
+
         
         tk.Button( window, text="Output File (optional):", font=('Arial,14,bold'), 
                   command=self.select_file ).place(x=10,y=130)
         
-        tk.Label(window, text="Monthly Payment:", font=('Arial,14,bold'), bg='#f0e6c2',
+        tk.Label(window, text="Monthly Payment:", font=('Arial,14,bold'), bg='#ebebad',
                  fg='blue' ).place(x=10,y=190)
-        tk.Label(window, text="Total Payment:", font=('Arial,14,bold'), bg='#f0e6c2',
+        tk.Label(window, text="Total Payment:", font=('Arial,14,bold'), bg='#ebebad',
                  fg='blue' ).place(x=10,y=230)
 
         # Define the actual input fields and their corresponding variables
+                
+        self.loanamountVar=tk.StringVar()
+        tk.Entry( window, textvariable=self.loanamountVar, font=('Arial,14,bold') 
+                 ).place(x=230,y=10)
+        
         self.annualinterestVar = tk.StringVar()
         tk.Entry( window, textvariable=self.annualinterestVar, font=('Arial,14,bold')
-                 ).place(x=230,y=10)
+                 ).place(x=230,y=50)
         
         self.numberofyearsVar = tk.StringVar()
         tk.Entry( window, textvariable=self.numberofyearsVar, font=('Arial,14,bold') 
-                 ).place(x=230,y=50)
-        
-        self.loanamountVar=tk.StringVar()
-        tk.Entry( window, textvariable=self.loanamountVar, font=('Arial,14,bold') 
                  ).place(x=230,y=90)
+
         
         # Acquire the output file path names.  The output will bet to a text file as well as
         # to a CSV file, both in the same directory.  The default directory is the current
         # working directory where the script is invoked.
         self.outpathVar = tk.StringVar()
-        tk.Entry( window, textvariable= self.outpathVar, font=('Arial,14,bold'),
+        tk.Entry( window, textvariable= self.outpathVar, font=('Arial,14,bold'), width=40,
                  ).place(x=230,y=130) 
 
         # Define the output fields and their corresponding variables
         self.monthlypaymentVar = tk.StringVar()
         tk.Label( window, textvariable=self.monthlypaymentVar, font=('Arial,14,bold'),
-                 bg='#f0e6c2' ).place(x=230,y=190)
+                 bg='#ebebad' ).place(x=230,y=190)
         
         self.totalpaymentVar=tk.StringVar()
         tk.Label( window, textvariable=self.totalpaymentVar, font=('Arial,15,bold'),
-                 bg='#f0e6c2' ).place(x=230,y=230)
+                 bg='#ebebad' ).place(x=230,y=230)
 
         # Finally define the activation/go button to invoke the action
         tk.Button( window, text="Calculate", font=('Arial,14,bold'), command=self.calculate_loan 
-                  ).place(x=180,y=270)
+                  ).place(x=230,y=270)
+        
+        self.monthly_payment = 0.0        # Default value
+
 
         # Start the 'event' loop
         window.mainloop()
@@ -87,6 +93,11 @@ class LoanCalc:
             monthly_interest_rate = float(self.annualinterestVar.get()) / 12.
         except ValueError:
             self.annualinterestVar.set( f"Invalid interest rate!" )
+
+        # Make sure the interest rate is a decimal value less than 1.0
+        if( monthly_interest_rate >= 1.0/12. ):
+            print( "Invalid interest rate specified, must be less than 1.0." )
+            exit()
 
         try:
             num_years = int(self.numberofyearsVar.get())
@@ -209,23 +220,31 @@ loan = LoanCalc()
 
 # Acquire the required loan parameters (from the LoanCalc class) to compute the payment schedule
 monthly_payment = loan.monthly_payment 
+if( monthly_payment < 1.0 ):
+    exit()                            # In case the user aborted with no data
+
 loan_amount     = float( loan.loanamountVar.get() )
 interest_rate   = float( loan.annualinterestVar.get() )
 number_of_years = float( loan.numberofyearsVar.get() )
 output_file_txt = loan.outpathVar.get()
 
 
-# Open the text output file
-out_path = pathlib.Path( output_file_txt )
-with out_path.open( mode='w', encoding='utf-8' ) as o_file:
+# Open the text output file and generate the payment schedule - if and only if the 
+# output file was specified.
 
-    # Compute and output the payment schedule
-    schedule = PaymentSchedule( monthly_payment, loan_amount, interest_rate, number_of_years,
-                               o_file )
+if( len(output_file_txt) > 7 ):   # 'c:\a.txt' is 8 characters
+    print( "Output file name: ", output_file_txt )
+
+    out_path = pathlib.Path( output_file_txt )
+    with out_path.open( mode='w', encoding='utf-8' ) as o_file:
+
+        # Compute and output the payment schedule
+        schedule = PaymentSchedule( monthly_payment, loan_amount, interest_rate, 
+                                   number_of_years, o_file )
     
-    # Write the loan parameters to the output file headers.
-    schedule.file_headers()
-    schedule.payments()
+        # Write the loan parameters to the output file headers.
+        schedule.file_headers()
+        schedule.payments()
 
 
 

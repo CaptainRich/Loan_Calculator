@@ -19,8 +19,17 @@ generate the GUI and acquire the loan details.
 
 ## Environment
 
+There is no custom environment needed to run this script. The only requirement is
+that Python 3.12 or greater is installed on the machine.
+
 
 ## Usage
+
+This script can be invoked from Windows Explorer or from an IDE (VS Code).
+
+On start-up the input dialog is displayed.  The loan amount, the interest rate, and
+the payment period are all required input values.  If the optional output file (path)
+is specified, a payment schedule is generated in the (specified) file.
 
 
 ## References
@@ -46,3 +55,5 @@ tkinter  - used to generate and interact with the GUI
 
 
 ## Sample Output
+![Screenshot](LoanCalc.png) Image of input/output dialog with mocked data.
+![Screenshot](LoanSchedule.png) Image of optional output text file.
