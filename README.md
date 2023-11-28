@@ -47,13 +47,15 @@ The equation is:  PV = [1 - (1 + r)^-n ] / r
 
 
 ## Technologies and Imports
-datetime - used to time-stamp the output
-pathlib  - used for file manipulations
-sys      - used for try/except error processing
-tkinter  - used to generate and interact with the GUI
+datetime - used to time-stamp the output  
+pathlib  - used for file manipulations  
+sys      - used for try/except error processing  
+tkinter  - used to generate and interact with the GUI  
 
 
 
 ## Sample Output
-![Screenshot](LoanCalc.png) Image of input/output dialog with mocked data.
-![Screenshot](LoanSchedule.png) Image of optional output text file.
+![Screenshot](LoanCalc.png)  
+Image of input/output dialog with mocked data.
+![Screenshot](LoanSchedule.png)  
+Image of optional output text file.
