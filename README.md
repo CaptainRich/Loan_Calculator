@@ -1,6 +1,6 @@
 # $`\textcolor{blue}{\text{Directory-Scan}}`$
-Loan_Calculator
-Richard Ay (November 2023)
+Loan_Calculator  
+Richard Ay (November 2023)  
 A script to compute a loan payment and payment schedule.
 
 ## $`\textcolor{blue}{\text{Table of Contents}}`$
@@ -56,6 +56,6 @@ tkinter  - used to generate and interact with the GUI
 
 ## Sample Output
 ![Screenshot](LoanCalc.png)  
-Image of input/output dialog with mocked data.
+# $`\textcolor{blue}{\text{Image of input/output dialog with mocked data.}}`$
 ![Screenshot](LoanSchedule.png)  
-Image of optional output text file.
+# $`\textcolor{blue}{\text{Image of optional output text file.}}`$
