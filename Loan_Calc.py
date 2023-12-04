@@ -14,7 +14,7 @@ import sys                              # For try/except error processing
 """The 'LoanCalc' class acquires the loan parameters and determines the monthly payment amount."""
 
 class LoanCalc:
-    # Initializer / Constructor
+    """ Initializer / Constructor"""
     def __init__( self ):
         window = tk.Tk()
         window.title( "Loan Calculator" )
@@ -81,9 +81,11 @@ class LoanCalc:
 
 
 
-    # Compute the monthly payment and the total loan repayment amount.
-    # Verify there is sufficient input data defined before attempting the computation.
+    ##############################################################################################
     def calculate_loan( self ):
+        """Compute the monthly payment and the total loan repayment amount.  Also,
+           verify there is sufficient input data defined before attempting the
+           computations. """
         try:
             loan_amount = float(self.loanamountVar.get())
         except ValueError:
@@ -122,8 +124,9 @@ class LoanCalc:
 
 
 
-    # Determine the required monthly payment amount.  See reference noted in 'readme.md'
+    ############################################################################################## 
     def get_monthly_payment( self, loan_amount, monthly_interest_rate, num_years ):
+        """Determine the required monthly payment amount.  See reference noted in 'readme.md'"""
         num_periods = num_years * 12
         present_value = ( 1.0 - 1.0 / ( 1.0 + monthly_interest_rate )**(num_periods) )
         present_value = present_value / monthly_interest_rate
@@ -132,8 +135,9 @@ class LoanCalc:
         return monthly_payment
     
 
-    # Allow the user to select the output (file) pathname.
+    ############################################################################################## 
     def select_file( self ):
+        """ Allow the user to select the output (file) pathname. """
 
         # Build the path to the current working directory to seed the fileopen dialog
         current_path = pathlib.Path.cwd()
@@ -148,11 +152,11 @@ class LoanCalc:
 
 
 ####################################################################################################
-####################################################################################################
+###################################################################################################
 """The 'LoanCalc' class uses the loan payment details to computes the monthly payment schedule."""
 
 class PaymentSchedule:
-    # Initializer / Constructor
+    """Initializer / Constructor """
     def __init__( self, monthly_payment, loan_amount, interest_rate, number_of_years,
                  o_file ):
         
@@ -163,8 +167,9 @@ class PaymentSchedule:
         self.o_file          = o_file
 
 
-    # Write the loan specifics to the start of the file (header).
+    ############################################################################################## 
     def file_headers( self ):
+        """Write the loan specifics to the start of the file (header)."""
 
         title = '\n' + 'Loan repayment schedule' + '\n'
         o_file.write( title )
@@ -191,8 +196,9 @@ class PaymentSchedule:
         o_file.write( title )
 
 
-    # Compute and output the monthly payment schedule.
+    ############################################################################################## 
     def payments( self ):
+        """Compute and output the monthly payment schedule."""
         months = int( self.number_of_years * 12 )
         monthly_interest = self.interest_rate / 12.
         monthly_payment  = self.monthly_payment
@@ -214,6 +220,7 @@ class PaymentSchedule:
 
 
 ################################################################################################
+""" Main body of the loan calculator program. """
 
 # Invoke the loan calculator
 loan = LoanCalc()
